@@ -1,16 +1,8 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useState, useEffect, ReactNode } from 'react';
 import { User, AuthContextType } from '../types';
 import { mockLogin } from '../data/mockData';
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
-
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  return context;
-};
+export const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 interface AuthProviderProps {
   children: ReactNode;
@@ -35,8 +27,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       const authenticatedUser = await mockLogin(email, password);
       setUser(authenticatedUser);
       localStorage.setItem('currentUser', JSON.stringify(authenticatedUser));
-    } catch (error) {
-      throw error;
     } finally {
       setLoading(false);
     }

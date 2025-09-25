@@ -1,4 +1,3 @@
-import React from 'react';
 import { JobPosting } from '../types';
 import './JobCard.css';
 
