@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '../hooks/useAuth';
 import Navigation from '../components/Navigation';
 import JobCard from '../components/JobCard';
 import JobFilters from '../components/JobFilters';
