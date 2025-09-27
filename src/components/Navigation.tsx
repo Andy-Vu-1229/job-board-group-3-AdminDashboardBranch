@@ -1,20 +1,45 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import './Navigation.css';
 
 const Navigation: React.FC = () => {
   const { user, logout } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
   const [activeTab, setActiveTab] = useState('job-board');
 
   const tabs = [
-    { id: 'job-board', label: 'DawgsConnect', active: true },
-    { id: 'applications', label: 'My Applications', active: false },
-    { id: 'profile', label: 'My Profile', active: false }
+    { id: 'job-board', label: 'DawgsConnect', route: '/dashboard' },
+    { id: 'create-job', label: 'Create a Job Posting', route: '/create-job' },
+    { id: 'applications', label: 'My Applications', route: '/applications' },
+    { id: 'profile', label: 'My Profile', route: '/profile' }
   ];
 
+  useEffect(() => {
+    // Set active tab based on current route
+    const tabRoutes = [
+      { id: 'job-board', route: '/dashboard' },
+      { id: 'create-job', route: '/create-job' },
+      { id: 'applications', route: '/applications' },
+      { id: 'profile', route: '/profile' }
+    ];
+    const currentTab = tabRoutes.find(tab => tab.route === location.pathname);
+    if (currentTab) {
+      setActiveTab(currentTab.id);
+    }
+  }, [location.pathname]);
+
   const handleTabClick = (tabId: string) => {
-    setActiveTab(tabId);
-    // TODO: Add navigation logic when routes are implemented
+    const tab = tabs.find(t => t.id === tabId);
+    if (tab) {
+      if (tab.route === '/applications' || tab.route === '/profile') {
+        // For now, show placeholder for unimplemented routes
+        alert(`${tab.label} page coming soon!`);
+      } else {
+        navigate(tab.route);
+      }
+    }
   };
 
   return (
@@ -33,7 +58,7 @@ const Navigation: React.FC = () => {
               </button>
             ))}
           </div>
-          
+
           <div className="nav-user-section">
             <div className="user-info">
               <span className="user-name">

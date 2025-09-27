@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { AuthProvider } from './contexts/AuthContext';
 import SignInPage from './pages/SignInPage';
 import StudentDashboard from './pages/StudentDashboard';
+import CreateJobPage from './pages/CreateJobPage';
 import ProtectedRoute from './components/ProtectedRoute';
 import './App.css';
 
@@ -17,6 +18,14 @@ function App() {
               element={
                 <ProtectedRoute>
                   <StudentDashboard />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/create-job" 
+              element={
+                <ProtectedRoute>
+                  <CreateJobPage />
                 </ProtectedRoute>
               } 
             />
