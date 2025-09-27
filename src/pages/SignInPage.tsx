@@ -37,8 +37,9 @@ const SignInPage: React.FC = () => {
     <div className="signin-container">
       <div className="signin-card">
         <div className="signin-header">
-          <h1>MIS Student Job Board</h1>
-          <p>Sign in to access job opportunities</p>
+          <h1>DawgsConnect</h1>
+          <p>University of Georgia Student Job Board</p>
+          <p className="signin-subtitle">Sign in to access job opportunities</p>
         </div>
         
         <form onSubmit={handleSubmit} className="signin-form">

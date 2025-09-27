@@ -60,18 +60,18 @@
 }
 
 .job-type-internship {
-  background-color: #e6fffa;
-  color: #00a3a3;
+  background-color: #fef2f2;
+  color: #ba0c2f;
 }
 
 .job-type-fulltime {
-  background-color: #e6f7ff;
-  color: #0066cc;
+  background-color: #f7fafc;
+  color: #000000;
 }
 
 .job-type-contract {
-  background-color: #fff2e6;
-  color: #cc6600;
+  background-color: #fff8f1;
+  color: #c05621;
 }
 
 .job-type-default {
@@ -123,7 +123,7 @@
 }
 
 .skill-tag.more-skills {
-  background-color: #667eea;
+  background-color: #ba0c2f;
   color: white;
 }
 
@@ -178,7 +178,7 @@
 }
 
 .apply-button {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #ba0c2f 0%, #000000 100%);
   color: white;
   border: none;
   padding: 0.625rem 1.25rem;
@@ -191,7 +191,7 @@
 
 .apply-button:hover {
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+  box-shadow: 0 4px 12px rgba(186, 12, 47, 0.4);
 }
 
 .apply-button:active {

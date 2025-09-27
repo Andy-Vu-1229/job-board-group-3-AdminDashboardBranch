@@ -1,7 +1,7 @@
 .navigation-bar {
-  background: white;
-  border-bottom: 1px solid #e2e8f0;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  background: #ba0c2f;
+  border-bottom: 2px solid #000000;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
   position: sticky;
   top: 0;
   z-index: 100;
@@ -30,8 +30,8 @@
   border: none;
   padding: 1rem 1.5rem;
   font-size: 0.875rem;
-  font-weight: 500;
-  color: #718096;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.8);
   cursor: pointer;
   transition: all 0.2s ease;
   border-bottom: 3px solid transparent;
@@ -39,18 +39,19 @@
 }
 
 .nav-tab:hover {
-  color: #4a5568;
-  background-color: #f7fafc;
+  color: white;
+  background-color: rgba(255, 255, 255, 0.1);
 }
 
 .nav-tab.active {
-  color: #667eea;
-  border-bottom-color: #667eea;
-  background-color: #f7fafc;
+  color: white;
+  border-bottom-color: #ffffff;
+  background-color: rgba(255, 255, 255, 0.15);
+  font-weight: 700;
 }
 
 .nav-tab:focus {
-  outline: 2px solid #667eea;
+  outline: 2px solid #ffffff;
   outline-offset: -2px;
 }
 
@@ -68,35 +69,36 @@
 }
 
 .user-name {
-  color: #2d3748;
+  color: white;
   font-size: 0.875rem;
   font-weight: 600;
 }
 
 .user-role {
-  color: #718096;
+  color: rgba(255, 255, 255, 0.8);
   font-size: 0.75rem;
   text-transform: capitalize;
 }
 
 .logout-button {
-  background-color: #e2e8f0;
-  color: #4a5568;
-  border: none;
+  background-color: rgba(255, 255, 255, 0.2);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.3);
   padding: 0.5rem 1rem;
   border-radius: 6px;
   font-size: 0.875rem;
   font-weight: 500;
   cursor: pointer;
-  transition: background-color 0.2s ease;
+  transition: all 0.2s ease;
 }
 
 .logout-button:hover {
-  background-color: #cbd5e0;
+  background-color: rgba(255, 255, 255, 0.3);
+  border-color: rgba(255, 255, 255, 0.5);
 }
 
 .logout-button:focus {
-  outline: 2px solid #667eea;
+  outline: 2px solid #ffffff;
   outline-offset: 2px;
 }
 
@@ -155,7 +157,7 @@
   
   .nav-tab.active {
     border-bottom-color: #e2e8f0;
-    background-color: #667eea;
+    background-color: rgba(255, 255, 255, 0.2);
     color: white;
   }
   

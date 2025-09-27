@@ -11,7 +11,7 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: #f8fafc;
+  background-color: #f7f7f7;
   color: #2d3748;
 }
 
@@ -21,13 +21,13 @@ body {
 
 /* Focus styles for accessibility */
 *:focus {
-  outline: 2px solid #667eea;
+  outline: 2px solid #ba0c2f;
   outline-offset: 2px;
 }
 
 /* Button focus styles */
 button:focus {
-  outline: 2px solid #667eea;
+  outline: 2px solid #ba0c2f;
   outline-offset: 2px;
 }
 
