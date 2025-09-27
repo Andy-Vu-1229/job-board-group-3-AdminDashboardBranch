@@ -7,7 +7,7 @@ const Navigation: React.FC = () => {
   const [activeTab, setActiveTab] = useState('job-board');
 
   const tabs = [
-    { id: 'job-board', label: 'MIS Student Job Board', active: true },
+    { id: 'job-board', label: 'DawgsConnect', active: true },
     { id: 'applications', label: 'My Applications', active: false },
     { id: 'profile', label: 'My Profile', active: false }
   ];

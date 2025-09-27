@@ -77,7 +77,7 @@ const StudentDashboard: React.FC = () => {
         <div className="dashboard-content">
           <div className="welcome-section">
             <h1>Welcome back, {user?.firstName}!</h1>
-            <p>Discover your next opportunity</p>
+            <p>Discover your next opportunity with DawgsConnect</p>
           </div>
 
           <JobFilters
