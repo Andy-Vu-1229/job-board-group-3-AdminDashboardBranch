@@ -135,6 +135,37 @@
   color: #2d3748;
 }
 
+.create-account-link {
+  margin-top: 1.5rem;
+  text-align: center;
+  padding-top: 1rem;
+  border-top: 1px solid #e2e8f0;
+}
+
+.create-account-link p {
+  margin: 0;
+  font-size: 0.875rem;
+  color: #4a5568;
+}
+
+.create-account-link a {
+  color: #ba0c2f;
+  text-decoration: none;
+  font-weight: 600;
+  transition: color 0.2s ease;
+}
+
+.create-account-link a:hover {
+  color: #000000;
+  text-decoration: underline;
+}
+
+.create-account-link a:focus {
+  outline: 2px solid #ba0c2f;
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
 .loading-container {
   min-height: 100vh;
   display: flex;
