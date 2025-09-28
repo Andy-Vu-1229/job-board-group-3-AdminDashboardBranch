@@ -89,6 +89,10 @@ const SignInPage: React.FC = () => {
           <p>Email: student@university.edu</p>
           <p>Password: password123</p>
         </div>
+
+        <div className="create-account-link">
+          <p>Don't have an account? <a href="/create-account">Create one here</a></p>
+        </div>
       </div>
     </div>
   );

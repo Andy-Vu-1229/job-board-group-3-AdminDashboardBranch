@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 import SignInPage from './pages/SignInPage';
+import CreateAccountPage from './pages/CreateAccountPage';
 import StudentDashboard from './pages/StudentDashboard';
 import CreateJobPage from './pages/CreateJobPage';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -13,6 +14,7 @@ function App() {
         <div className="App">
           <Routes>
             <Route path="/signin" element={<SignInPage />} />
+            <Route path="/create-account" element={<CreateAccountPage />} />
             <Route 
               path="/dashboard" 
               element={
