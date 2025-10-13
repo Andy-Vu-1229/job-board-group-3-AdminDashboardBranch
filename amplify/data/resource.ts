@@ -24,11 +24,12 @@ const schema = a.schema({
     .identifier(["cognitoId"])
     .secondaryIndexes((index: any) => [
       index("role").name("byRole"),
-    ])
-    .authorization((allow: any) => [
-      allow.authenticated(),
-      allow.owner().to(["read", "update"]),
     ]),
+    // Temporarily removed authorization while resetting UserPool
+    // .authorization((allow: any) => [
+    //   allow.authenticated(),
+    //   allow.owner().to(["read", "update"]),
+    // ]),
 
   JobPosting: a
     .model({
@@ -51,11 +52,12 @@ const schema = a.schema({
       index("status").name("byStatus"),
       index("jobType").name("byJobType"),
       index("industry").name("byIndustry"),
-    ])
-    .authorization((allow: any) => [
-      allow.authenticated().to(["read"]),
-      allow.owner().to(["create", "read", "update", "delete"]),
     ]),
+    // Temporarily removed authorization while resetting UserPool
+    // .authorization((allow: any) => [
+    //   allow.authenticated().to(["read"]),
+    //   allow.owner().to(["create", "read", "update", "delete"]),
+    // ]),
 });
 
 export type Schema = ClientSchema<typeof schema>;
@@ -63,7 +65,7 @@ export type Schema = ClientSchema<typeof schema>;
 export const data = defineData({
   schema,
   authorizationModes: {
-    defaultAuthorizationMode: "userPool",
+    defaultAuthorizationMode: "apiKey", // Temporarily changed from userPool
   },
 });
 
