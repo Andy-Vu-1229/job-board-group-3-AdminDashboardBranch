@@ -1,8 +1,8 @@
 import { defineBackend } from '@aws-amplify/backend';
-// import { auth } from './auth/resource'; // Temporarily commented out
+import { auth } from './auth/resource';
 import { data } from './data/resource';
 
 defineBackend({
-  // auth, // Temporarily commented out to reset UserPool
+  auth,
   data,
 });

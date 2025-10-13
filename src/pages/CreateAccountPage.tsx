@@ -98,9 +98,10 @@ const CreateAccountPage: React.FC = () => {
       }
 
       case 'phoneNumber': {
-        if (!value.trim()) return 'Phone number is required';
-        const phoneRegex = /^[\d\s\-()]{10,}$/;
-        if (!phoneRegex.test(value.replace(/\D/g, ''))) return 'Please enter a valid phone number';
+        if (value.trim()) {
+          const phoneRegex = /^[\d\s\-()]{10,}$/;
+          if (!phoneRegex.test(value.replace(/\D/g, ''))) return 'Please enter a valid phone number';
+        }
         return '';
       }
 

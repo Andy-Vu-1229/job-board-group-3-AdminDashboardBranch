@@ -10,7 +10,7 @@ const schema = a.schema({
     .model({
       cognitoId: a.id().required(),
       role: a.enum(["STUDENT", "COMPANY_REP", "ADMIN"]),
-      phoneNumber: a.string().required(),
+      phoneNumber: a.string(),
       // Student fields
       graduationYear: a.integer(),
       // Company rep fields
@@ -26,7 +26,8 @@ const schema = a.schema({
       index("role").name("byRole"),
     ])
     .authorization((allow: any) => [
-      allow.publicApiKey(), // Temporary public access while resetting UserPool
+      allow.authenticated(),
+      allow.owner().to(["read", "update"]),
     ]),
 
   JobPosting: a
@@ -52,7 +53,8 @@ const schema = a.schema({
       index("industry").name("byIndustry"),
     ])
     .authorization((allow: any) => [
-      allow.publicApiKey(), // Temporary public access while resetting UserPool
+      allow.authenticated().to(["read"]),
+      allow.owner().to(["create", "read", "update", "delete"]),
     ]),
 });
 
@@ -61,10 +63,7 @@ export type Schema = ClientSchema<typeof schema>;
 export const data = defineData({
   schema,
   authorizationModes: {
-    defaultAuthorizationMode: "apiKey",
-    apiKeyAuthorizationMode: {
-      expiresInDays: 30,
-    },
+    defaultAuthorizationMode: "userPool",
   },
 });
 
