@@ -107,7 +107,7 @@ const CreateAccountPage: React.FC = () => {
 
       case 'password': {
         if (!value) return 'Password is required';
-        if (value.length < 6) return 'Password must be at least 6 characters';
+        if (value.length < 8) return 'Password must be at least 8 characters';
         return '';
       }
 
@@ -353,6 +353,9 @@ const CreateAccountPage: React.FC = () => {
                   placeholder="Create a strong password"
                 />
                 {errors.password && <span className="error-text">{errors.password}</span>}
+                <small className="field-hint">
+                  AWS requires: 8+ characters with uppercase, lowercase, number, and symbol (e.g., Password123!)
+                </small>
               </div>
 
               <div className="form-group">
