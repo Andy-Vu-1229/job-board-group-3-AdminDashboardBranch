@@ -1,6 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { signUp, SignUpInput } from 'aws-amplify/auth';
+import { generateClient } from 'aws-amplify/data';
+import type { Schema } from '../../amplify/data/resource';
 import './CreateAccountPage.css';
+
+const client = generateClient<Schema>();
 
 interface FormData {
   firstName: string;
@@ -11,15 +16,11 @@ interface FormData {
   confirmPassword: string;
   role: string;
   // Student fields
-  major: string;
   graduationYear: string;
-  // Faculty fields
-  department: string;
   // Company rep fields
   companyName: string;
   jobTitle: string;
   industry: string;
-  website: string;
 }
 
 interface FormErrors {
@@ -30,13 +31,11 @@ interface FormErrors {
   password?: string;
   confirmPassword?: string;
   role?: string;
-  major?: string;
   graduationYear?: string;
-  department?: string;
   companyName?: string;
   jobTitle?: string;
   industry?: string;
-  website?: string;
+  general?: string;
 }
 
 const CreateAccountPage: React.FC = () => {
@@ -49,34 +48,17 @@ const CreateAccountPage: React.FC = () => {
     password: '',
     confirmPassword: '',
     role: '',
-    major: '',
     graduationYear: '',
-    department: '',
     companyName: '',
     jobTitle: '',
-    industry: '',
-    website: ''
+    industry: ''
   });
+
+
 
   const [errors, setErrors] = useState<FormErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isFormValid, setIsFormValid] = useState(false);
-
-  // Mock data for departments
-  const departments = [
-    { value: '', label: 'Select Department' },
-    { value: 'Computer Science', label: 'Computer Science' },
-    { value: 'Engineering', label: 'Engineering' },
-    { value: 'Business', label: 'Business' },
-    { value: 'Mathematics', label: 'Mathematics' },
-    { value: 'Biology', label: 'Biology' },
-    { value: 'Chemistry', label: 'Chemistry' },
-    { value: 'Physics', label: 'Physics' },
-    { value: 'English', label: 'English' },
-    { value: 'History', label: 'History' },
-    { value: 'Psychology', label: 'Psychology' },
-    { value: 'Economics', label: 'Economics' }
-  ];
 
   const industries = [
     { value: '', label: 'Select Industry' },
@@ -140,37 +122,21 @@ const CreateAccountPage: React.FC = () => {
         if (!value) return 'Please select a role';
         return '';
 
-      case 'major':
-        if (formData.role === 'student' && !value.trim()) return 'Major is required for students';
-        return '';
-
       case 'graduationYear':
-        if (formData.role === 'student' && !value) return 'Graduation year is required for students';
-        return '';
-
-      case 'department':
-        if (formData.role === 'faculty' && !value) return 'Department is required for faculty';
+        if (formData.role === 'STUDENT' && !value) return 'Graduation year is required for students';
         return '';
 
       case 'companyName':
-        if (formData.role === 'company_rep' && !value.trim()) return 'Company name is required';
+        if (formData.role === 'COMPANY_REP' && !value.trim()) return 'Company name is required';
         return '';
 
       case 'jobTitle':
-        if (formData.role === 'company_rep' && !value.trim()) return 'Job title is required';
+        if (formData.role === 'COMPANY_REP' && !value.trim()) return 'Job title is required';
         return '';
 
       case 'industry':
-        if (formData.role === 'company_rep' && !value) return 'Industry is required';
+        if (formData.role === 'COMPANY_REP' && !value) return 'Industry is required';
         return '';
-
-      case 'website': {
-        if (formData.role === 'company_rep' && value.trim()) {
-          const urlRegex = /^https?:\/\/.+\..+/;
-          if (!urlRegex.test(value)) return 'Please enter a valid URL (starting with http:// or https://)';
-        }
-        return '';
-      }
 
       default:
         return '';
@@ -199,13 +165,10 @@ const CreateAccountPage: React.FC = () => {
       let requiredFields = baseFields;
 
       switch (formData.role) {
-        case 'student':
-          requiredFields = [...baseFields, 'major', 'graduationYear'];
+        case 'STUDENT':
+          requiredFields = [...baseFields, 'graduationYear'];
           break;
-        case 'faculty':
-          requiredFields = [...baseFields, 'department'];
-          break;
-        case 'company_rep':
+        case 'COMPANY_REP':
           requiredFields = [...baseFields, 'companyName', 'jobTitle', 'industry'];
           break;
         default:
@@ -231,23 +194,72 @@ const CreateAccountPage: React.FC = () => {
     if (!isFormValid) return;
 
     setIsSubmitting(true);
+    setErrors(prev => ({ ...prev, general: '' }));
 
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      const signUpInput: SignUpInput = {
+        username: formData.email,
+        password: formData.password,
+        options: {
+          userAttributes: {
+            email: formData.email,
+            given_name: formData.firstName,
+            family_name: formData.lastName,
+            phone_number: formData.phoneNumber,
+          },
+        },
+      };
 
-      // Show success message
-      alert('Account created successfully! Please check your email to verify your account.');
+      const { isSignUpComplete, userId } = await signUp(signUpInput);
 
-      // Navigate back to sign in
-      navigate('/signin');
-
-    } catch (error) {
-      alert('Error creating account. Please try again.');
+      if (isSignUpComplete) {
+        // Create user record in DynamoDB
+        await createUserRecord(userId!);
+        alert('Account created successfully! You can now sign in.');
+        navigate('/signin');
+      }
+    } catch (error: any) {
+      console.error('Sign up error:', error);
+      
+      if (error.name === 'UsernameExistsException') {
+        setErrors(prev => ({ ...prev, general: 'An account with this email already exists.' }));
+      } else if (error.name === 'InvalidPasswordException') {
+        setErrors(prev => ({ ...prev, general: 'Password does not meet requirements.' }));
+      } else if (error.name === 'InvalidParameterException') {
+        setErrors(prev => ({ ...prev, general: 'Invalid email format or other parameter error.' }));
+      } else {
+        setErrors(prev => ({ ...prev, general: error.message || 'Error creating account. Please try again.' }));
+      }
     } finally {
       setIsSubmitting(false);
     }
   };
+
+  const createUserRecord = async (cognitoId: string) => {
+    try {
+      const userData: any = {
+        cognitoId,
+        role: formData.role as 'STUDENT' | 'COMPANY_REP' | 'ADMIN',
+        phoneNumber: formData.phoneNumber,
+      };
+
+      // Add role-specific fields
+      if (formData.role === 'STUDENT') {
+        userData.graduationYear = parseInt(formData.graduationYear);
+      } else if (formData.role === 'COMPANY_REP') {
+        userData.companyName = formData.companyName;
+        userData.jobTitle = formData.jobTitle;
+        userData.industry = formData.industry;
+      }
+
+      await client.models.User.create(userData);
+    } catch (error) {
+      console.error('Error creating user record:', error);
+      throw new Error('Failed to create user profile');
+    }
+  };
+
+
 
   const handleBackToSignIn = () => {
     navigate('/signin');
@@ -367,30 +379,21 @@ const CreateAccountPage: React.FC = () => {
                   <input
                     type="radio"
                     name="role"
-                    value="student"
-                    checked={formData.role === 'student'}
+                    value="STUDENT"
+                    checked={formData.role === 'STUDENT'}
                     onChange={(e) => handleInputChange('role', e.target.value)}
                   />
-                  <span className="radio-label">Student</span>
+                  <span className="radio-label">MIS Student</span>
                 </label>
+
+
 
                 <label className="radio-option">
                   <input
                     type="radio"
                     name="role"
-                    value="faculty"
-                    checked={formData.role === 'faculty'}
-                    onChange={(e) => handleInputChange('role', e.target.value)}
-                  />
-                  <span className="radio-label">Faculty</span>
-                </label>
-
-                <label className="radio-option">
-                  <input
-                    type="radio"
-                    name="role"
-                    value="company_rep"
-                    checked={formData.role === 'company_rep'}
+                    value="COMPANY_REP"
+                    checked={formData.role === 'COMPANY_REP'}
                     onChange={(e) => handleInputChange('role', e.target.value)}
                   />
                   <span className="radio-label">Company Representative</span>
@@ -400,8 +403,8 @@ const CreateAccountPage: React.FC = () => {
                   <input
                     type="radio"
                     name="role"
-                    value="admin"
-                    checked={formData.role === 'admin'}
+                    value="ADMIN"
+                    checked={formData.role === 'ADMIN'}
                     onChange={(e) => handleInputChange('role', e.target.value)}
                   />
                   <span className="radio-label">Admin</span>
@@ -412,71 +415,35 @@ const CreateAccountPage: React.FC = () => {
           </div>
 
           {/* Student-specific fields */}
-          {formData.role === 'student' && (
+          {formData.role === 'STUDENT' && (
             <div className="form-section">
-              <h2>Student Information</h2>
-
-              <div className="form-row">
-                <div className="form-group">
-                  <label htmlFor="major">Major *</label>
-                  <input
-                    type="text"
-                    id="major"
-                    value={formData.major}
-                    onChange={(e) => handleInputChange('major', e.target.value)}
-                    className={errors.major ? 'error' : ''}
-                    placeholder="e.g., Computer Science"
-                  />
-                  {errors.major && <span className="error-text">{errors.major}</span>}
-                </div>
-
-                <div className="form-group">
-                  <label htmlFor="graduationYear">Expected Graduation Year *</label>
-                  <select
-                    id="graduationYear"
-                    value={formData.graduationYear}
-                    onChange={(e) => handleInputChange('graduationYear', e.target.value)}
-                    className={errors.graduationYear ? 'error' : ''}
-                  >
-                    <option value="">Select Year</option>
-                    {graduationYears.map(year => (
-                      <option key={year} value={year.toString()}>
-                        {year}
-                      </option>
-                    ))}
-                  </select>
-                  {errors.graduationYear && <span className="error-text">{errors.graduationYear}</span>}
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Faculty-specific fields */}
-          {formData.role === 'faculty' && (
-            <div className="form-section">
-              <h2>Faculty Information</h2>
+              <h2>MIS Student Information</h2>
+              <p className="section-description">
+                Welcome to the MIS program! Please provide your expected graduation year to help us connect you with relevant opportunities.
+              </p>
 
               <div className="form-group">
-                <label htmlFor="department">Department *</label>
+                <label htmlFor="graduationYear">Expected Graduation Year *</label>
                 <select
-                  id="department"
-                  value={formData.department}
-                  onChange={(e) => handleInputChange('department', e.target.value)}
-                  className={errors.department ? 'error' : ''}
+                  id="graduationYear"
+                  value={formData.graduationYear}
+                  onChange={(e) => handleInputChange('graduationYear', e.target.value)}
+                  className={errors.graduationYear ? 'error' : ''}
                 >
-                  {departments.map(dept => (
-                    <option key={dept.value} value={dept.value}>
-                      {dept.label}
+                  <option value="">Select Year</option>
+                  {graduationYears.map(year => (
+                    <option key={year} value={year.toString()}>
+                      {year}
                     </option>
                   ))}
                 </select>
-                {errors.department && <span className="error-text">{errors.department}</span>}
+                {errors.graduationYear && <span className="error-text">{errors.graduationYear}</span>}
               </div>
             </div>
           )}
 
           {/* Company rep-specific fields */}
-          {formData.role === 'company_rep' && (
+          {formData.role === 'COMPANY_REP' && (
             <div className="form-section">
               <h2>Company Information</h2>
 
@@ -526,19 +493,14 @@ const CreateAccountPage: React.FC = () => {
                   {errors.industry && <span className="error-text">{errors.industry}</span>}
                 </div>
 
-                <div className="form-group">
-                  <label htmlFor="website">Company Website</label>
-                  <input
-                    type="url"
-                    id="website"
-                    value={formData.website}
-                    onChange={(e) => handleInputChange('website', e.target.value)}
-                    className={errors.website ? 'error' : ''}
-                    placeholder="https://company.com"
-                  />
-                  {errors.website && <span className="error-text">{errors.website}</span>}
-                </div>
+
               </div>
+            </div>
+          )}
+
+          {errors.general && (
+            <div className="error-message" role="alert">
+              {errors.general}
             </div>
           )}
 
@@ -552,6 +514,8 @@ const CreateAccountPage: React.FC = () => {
             </button>
           </div>
         </form>
+
+
       </div>
     </div>
   );

@@ -4,7 +4,7 @@ import Navigation from '../components/Navigation';
 import JobCard from '../components/JobCard';
 import JobFilters from '../components/JobFilters';
 import { JobPosting } from '../types';
-import { mockJobPostings } from '../data/mockData';
+import { GraphQLService } from '../services/graphqlService';
 import './StudentDashboard.css';
 
 const StudentDashboard: React.FC = () => {
@@ -17,45 +17,84 @@ const StudentDashboard: React.FC = () => {
   const [selectedIndustry, setSelectedIndustry] = useState<string>('all');
 
   useEffect(() => {
-    // Simulate loading delay
     const loadJobs = async () => {
       setLoading(true);
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      setJobs(mockJobPostings);
-      setFilteredJobs(mockJobPostings);
-      setLoading(false);
+      try {
+        const jobPostings = await GraphQLService.getApprovedJobs();
+        setJobs(jobPostings);
+        setFilteredJobs(jobPostings);
+      } catch (error) {
+        console.error('Failed to load jobs:', error);
+        // Set empty array on error to show empty state
+        setJobs([]);
+        setFilteredJobs([]);
+      } finally {
+        setLoading(false);
+      }
     };
 
     loadJobs();
   }, []);
 
   useEffect(() => {
-    // Filter jobs based on search and filter criteria
-    let filtered = jobs;
+    const filterJobs = async () => {
+      if (searchTerm || selectedJobType !== 'all' || selectedIndustry !== 'all') {
+        try {
+          const filtered = await GraphQLService.searchJobs(searchTerm, selectedJobType, selectedIndustry);
+          setFilteredJobs(filtered);
+        } catch (error) {
+          console.error('Failed to filter jobs:', error);
+          // Fallback to client-side filtering
+          let filtered = jobs;
 
-    if (searchTerm) {
-      filtered = filtered.filter(job =>
-        job.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        job.companyName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        job.description.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    }
+          if (searchTerm) {
+            filtered = filtered.filter(job =>
+              job.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+              job.company.toLowerCase().includes(searchTerm.toLowerCase()) ||
+              job.description.toLowerCase().includes(searchTerm.toLowerCase())
+            );
+          }
 
-    if (selectedJobType !== 'all') {
-      filtered = filtered.filter(job => job.jobType === selectedJobType);
-    }
+          if (selectedJobType !== 'all') {
+            filtered = filtered.filter(job => job.jobType.toLowerCase() === selectedJobType.toLowerCase());
+          }
 
-    if (selectedIndustry !== 'all') {
-      filtered = filtered.filter(job => job.industry === selectedIndustry);
-    }
+          if (selectedIndustry !== 'all') {
+            filtered = filtered.filter(job => job.industry === selectedIndustry);
+          }
 
-    setFilteredJobs(filtered);
+          setFilteredJobs(filtered);
+        }
+      } else {
+        setFilteredJobs(jobs);
+      }
+    };
+
+    filterJobs();
   }, [jobs, searchTerm, selectedJobType, selectedIndustry]);
 
-  const handleApply = (jobId: string) => {
-    // Placeholder for apply functionality
-    alert(`Apply functionality for job ${jobId} will be implemented soon!`);
+  const handleApply = async (jobId: string) => {
+    try {
+      // Increment view count when user shows interest
+      await GraphQLService.incrementJobViewCount(jobId);
+      
+      // Find the job to get contact method
+      const job = filteredJobs.find(j => j.id === jobId);
+      if (job) {
+        if (job.contactMethod.type === 'EMAIL') {
+          // Open email client
+          const subject = encodeURIComponent(`Application for ${job.title}`);
+          const body = encodeURIComponent(`Dear Hiring Manager,\n\nI am interested in applying for the ${job.title} position at ${job.company}.\n\nBest regards`);
+          window.open(`mailto:${job.contactMethod.value}?subject=${subject}&body=${body}`);
+        } else if (job.contactMethod.type === 'CAREERS_PAGE') {
+          // Open careers page in new tab
+          window.open(job.contactMethod.value, '_blank');
+        }
+      }
+    } catch (error) {
+      console.error('Error handling apply action:', error);
+      alert('Unable to process application. Please try again.');
+    }
   };
 
   if (loading) {

@@ -39,7 +39,7 @@ const JobCard: React.FC<JobCardProps> = ({ job, onApply }) => {
         <div className="job-title-section">
           <h3 className="job-title">{job.title}</h3>
           <div className="company-info">
-            <span className="company-name">{job.companyName}</span>
+            <span className="company-name">{job.company}</span>
             <span className="industry">{job.industry}</span>
           </div>
         </div>
@@ -55,14 +55,14 @@ const JobCard: React.FC<JobCardProps> = ({ job, onApply }) => {
           <div className="skills-section">
             <h4>Required Skills</h4>
             <div className="skills-list">
-              {job.requiredSkills.slice(0, 4).map((skill, index) => (
+              {job.skills.slice(0, 4).map((skill, index) => (
                 <span key={index} className="skill-tag">
                   {skill}
                 </span>
               ))}
-              {job.requiredSkills.length > 4 && (
+              {job.skills.length > 4 && (
                 <span className="skill-tag more-skills">
-                  +{job.requiredSkills.length - 4} more
+                  +{job.skills.length - 4} more
                 </span>
               )}
             </div>
@@ -71,13 +71,13 @@ const JobCard: React.FC<JobCardProps> = ({ job, onApply }) => {
           <div className="job-meta">
             <div className="deadline">
               <span className="meta-label">Deadline:</span>
-              <span className="meta-value">{formatDeadline(job.applicationDeadline)}</span>
+              <span className="meta-value">{formatDeadline(job.deadline)}</span>
             </div>
             <div className="contact-method">
               <span className="meta-label">Apply via:</span>
               <span className="meta-value">
-                {job.contactMethod.type === 'email' ? 'Email' :
-                 job.contactMethod.type === 'careers_page' ? 'Company Website' : 'Phone'}
+                {job.contactMethod.type === 'EMAIL' ? 'Email' :
+                 job.contactMethod.type === 'CAREERS_PAGE' ? 'Company Website' : 'Other'}
               </span>
             </div>
           </div>
@@ -98,7 +98,7 @@ const JobCard: React.FC<JobCardProps> = ({ job, onApply }) => {
         <button 
           className="apply-button"
           onClick={handleApplyClick}
-          aria-label={`Apply for ${job.title} at ${job.companyName}`}
+          aria-label={`Apply for ${job.title} at ${job.company}`}
         >
           Apply Now
         </button>

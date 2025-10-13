@@ -1,48 +1,50 @@
 // Core type definitions for the Student Job Board application
 
 export interface User {
-  id: string;
-  email: string;
-  role: 'student' | 'faculty' | 'staff' | 'company_rep' | 'admin';
-  firstName: string;
-  lastName: string;
-  department?: string;
-  company?: string;
-  createdAt: string;
-  lastLogin: string;
+  cognitoId: string;
+  role: 'STUDENT' | 'COMPANY_REP' | 'ADMIN';
+  phoneNumber: string;
+  // Cognito fields (will be fetched separately)
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+  // Student fields
+  graduationYear?: number;
+  // Company rep fields
+  companyName?: string;
+  jobTitle?: string;
+  industry?: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface ContactMethod {
-  type: 'email' | 'careers_page' | 'phone';
+  type: 'EMAIL' | 'CAREERS_PAGE';
   value: string;
-  instructions?: string;
 }
 
 export interface JobPosting {
   id: string;
   title: string;
-  companyName: string;
+  company: string;
   industry: string;
-  jobType: 'internship' | 'full-time' | 'contract';
+  jobType: 'INTERNSHIP' | 'FULL_TIME' | 'CONTRACT';
   description: string;
-  responsibilities: string[];
-  requiredSkills: string[];
-  preferredSkills?: string[];
-  applicationDeadline: string;
+  skills: string[];
+  deadline: string;
   contactMethod: ContactMethod;
   postedBy: string;
-  approvedBy?: string;
-  status: 'draft' | 'pending' | 'approved' | 'archived';
-  createdAt: string;
-  updatedAt: string;
+  status: 'DRAFT' | 'PENDING' | 'APPROVED' | 'ARCHIVED';
   viewCount: number;
   applicationCount: number;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
   login: (email: string, password: string) => Promise<void>;
-  logout: () => void;
+  logout: () => Promise<void>;
   loading: boolean;
 }

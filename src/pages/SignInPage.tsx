@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { signIn, SignInInput } from 'aws-amplify/auth';
 import { useAuth } from '../hooks/useAuth';
 import './SignInPage.css';
 
@@ -24,10 +25,35 @@ const SignInPage: React.FC = () => {
     setIsLoading(true);
 
     try {
-      await login(email, password);
-      navigate('/dashboard');
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred during sign in');
+      const signInInput: SignInInput = {
+        username: email,
+        password: password,
+      };
+      
+      const { isSignedIn, nextStep } = await signIn(signInInput);
+      
+      if (isSignedIn) {
+        // Let the AuthContext handle the user state update
+        await login(email, password);
+        navigate('/dashboard');
+      } else {
+        setError('Sign in incomplete. Please try again.');
+      }
+    } catch (err: any) {
+      console.error('Sign in error:', err);
+      
+      // Handle specific Amplify Auth errors
+      if (err.name === 'NotAuthorizedException') {
+        setError('Invalid email or password. Please try again.');
+      } else if (err.name === 'UserNotFoundException') {
+        setError('No account found with this email address. Please check your email or create an account.');
+      } else if (err.name === 'TooManyRequestsException') {
+        setError('Too many failed attempts. Please wait a moment before trying again.');
+      } else if (err.name === 'LimitExceededException') {
+        setError('Account temporarily locked due to too many failed attempts. Please try again later.');
+      } else {
+        setError(err.message || 'An error occurred during sign in. Please try again.');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -84,12 +110,6 @@ const SignInPage: React.FC = () => {
           </button>
         </form>
         
-        <div className="demo-credentials">
-          <p><strong>Demo Credentials:</strong></p>
-          <p>Email: student@university.edu</p>
-          <p>Password: password123</p>
-        </div>
-
         <div className="create-account-link">
           <p>Don't have an account? <a href="/create-account">Create one here</a></p>
         </div>
