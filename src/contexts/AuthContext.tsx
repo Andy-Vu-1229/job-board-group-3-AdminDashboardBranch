@@ -31,33 +31,46 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         const userAttributes = await fetchUserAttributes();
         
         // Fetch extended user data from DynamoDB
-        const { data: userData } = await client.models.User.get({
-          cognitoId: cognitoUser.userId
-        });
+        try {
+          const { data: userData } = await client.models.User.get({
+            cognitoId: cognitoUser.userId
+          });
 
-        if (userData) {
-          // Combine Cognito and DynamoDB data
-          const fullUser: User = {
-            cognitoId: userData.cognitoId,
-            role: userData.role!,
-            phoneNumber: userData.phoneNumber || undefined,
+          if (userData) {
+            // Combine Cognito and DynamoDB data
+            const fullUser: User = {
+              cognitoId: userData.cognitoId,
+              role: userData.role!,
+              phoneNumber: userData.phoneNumber || undefined,
+              firstName: userAttributes.given_name,
+              lastName: userAttributes.family_name,
+              email: userAttributes.email,
+              graduationYear: userData.graduationYear || undefined,
+              companyName: userData.companyName || undefined,
+              jobTitle: userData.jobTitle || undefined,
+              industry: userData.industry || undefined,
+              createdAt: userData.createdAt || undefined,
+              updatedAt: userData.updatedAt || undefined,
+            };
+            
+            setUser(fullUser);
+          } else {
+            // User exists in Cognito but not in DynamoDB - sign them out
+            console.warn('User exists in Cognito but not in DynamoDB');
+            await signOut();
+            setUser(null);
+          }
+        } catch (dbError) {
+          console.error('Error fetching user data from DynamoDB:', dbError);
+          // For now, create a basic user object with just Cognito data
+          const basicUser: User = {
+            cognitoId: cognitoUser.userId,
+            role: 'STUDENT', // Default role
             firstName: userAttributes.given_name,
             lastName: userAttributes.family_name,
             email: userAttributes.email,
-            graduationYear: userData.graduationYear || undefined,
-            companyName: userData.companyName || undefined,
-            jobTitle: userData.jobTitle || undefined,
-            industry: userData.industry || undefined,
-            createdAt: userData.createdAt || undefined,
-            updatedAt: userData.updatedAt || undefined,
           };
-          
-          setUser(fullUser);
-        } else {
-          // User exists in Cognito but not in DynamoDB - sign them out
-          console.warn('User exists in Cognito but not in DynamoDB');
-          await signOut();
-          setUser(null);
+          setUser(basicUser);
         }
       } else {
         setUser(null);

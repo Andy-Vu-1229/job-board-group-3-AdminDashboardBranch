@@ -30,14 +30,19 @@ const SignInPage: React.FC = () => {
         password: password,
       };
       
-      const { isSignedIn } = await signIn(signInInput);
+      const { isSignedIn, nextStep } = await signIn(signInInput);
       
       if (isSignedIn) {
         // Let the AuthContext handle the user state update
         await login(email, password);
         navigate('/dashboard');
+      } else if (nextStep.signInStep === 'CONFIRM_SIGN_UP') {
+        setError('Please verify your email address first. Check your email for a verification code.');
+      } else if (nextStep.signInStep === 'RESET_PASSWORD') {
+        setError('Password reset required. Please check your email for reset instructions.');
       } else {
-        setError('Sign in incomplete. Please try again.');
+        console.log('Sign in next step:', nextStep);
+        setError('Sign in incomplete. Please try again or contact support.');
       }
     } catch (err: any) {
       console.error('Sign in error:', err);

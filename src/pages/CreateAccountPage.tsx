@@ -207,12 +207,22 @@ const CreateAccountPage: React.FC = () => {
         },
       };
 
-      const { isSignUpComplete, userId } = await signUp(signUpInput);
+      const { isSignUpComplete, userId, nextStep } = await signUp(signUpInput);
 
       if (isSignUpComplete) {
         // Create user record in DynamoDB
         await createUserRecord(userId!);
         alert('Account created successfully! You can now sign in.');
+        navigate('/signin');
+      } else if (nextStep.signUpStep === 'CONFIRM_SIGN_UP') {
+        // User needs to confirm email, but we'll create the DynamoDB record anyway
+        await createUserRecord(userId!);
+        alert('Account created! Please check your email for verification, then you can sign in.');
+        navigate('/signin');
+      } else {
+        // Handle other cases
+        await createUserRecord(userId!);
+        alert('Account created! You can now sign in.');
         navigate('/signin');
       }
     } catch (error: any) {
