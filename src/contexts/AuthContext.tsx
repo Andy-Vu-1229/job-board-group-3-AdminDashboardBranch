@@ -40,7 +40,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           const fullUser: User = {
             cognitoId: userData.cognitoId,
             role: userData.role!,
-            phoneNumber: userData.phoneNumber,
+            phoneNumber: userData.phoneNumber || undefined,
             firstName: userAttributes.given_name,
             lastName: userAttributes.family_name,
             email: userAttributes.email,

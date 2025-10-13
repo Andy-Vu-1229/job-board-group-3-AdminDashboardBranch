@@ -162,7 +162,7 @@ const CreateAccountPage: React.FC = () => {
 
   useEffect(() => {
     const checkFormValidity = () => {
-      const baseFields = ['firstName', 'lastName', 'email', 'phoneNumber', 'password', 'confirmPassword', 'role'];
+      const baseFields = ['firstName', 'lastName', 'email', 'password', 'confirmPassword', 'role'];
       let requiredFields = baseFields;
 
       switch (formData.role) {
@@ -240,8 +240,12 @@ const CreateAccountPage: React.FC = () => {
       const userData: any = {
         cognitoId,
         role: formData.role as 'STUDENT' | 'COMPANY_REP' | 'ADMIN',
-        phoneNumber: formData.phoneNumber,
       };
+
+      // Add phone number only if provided
+      if (formData.phoneNumber.trim()) {
+        userData.phoneNumber = formData.phoneNumber;
+      }
 
       // Add role-specific fields
       if (formData.role === 'STUDENT') {
@@ -327,7 +331,7 @@ const CreateAccountPage: React.FC = () => {
               </div>
 
               <div className="form-group">
-                <label htmlFor="phoneNumber">Phone Number *</label>
+                <label htmlFor="phoneNumber">Phone Number (Optional)</label>
                 <input
                   type="tel"
                   id="phoneNumber"

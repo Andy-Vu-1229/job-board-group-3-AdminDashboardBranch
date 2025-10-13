@@ -3,7 +3,7 @@
 export interface User {
   cognitoId: string;
   role: 'STUDENT' | 'COMPANY_REP' | 'ADMIN';
-  phoneNumber: string;
+  phoneNumber?: string;
   // Cognito fields (will be fetched separately)
   firstName?: string;
   lastName?: string;
