@@ -39,17 +39,17 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           // Combine Cognito and DynamoDB data
           const fullUser: User = {
             cognitoId: userData.cognitoId,
-            role: userData.role,
+            role: userData.role!,
             phoneNumber: userData.phoneNumber,
             firstName: userAttributes.given_name,
             lastName: userAttributes.family_name,
             email: userAttributes.email,
-            graduationYear: userData.graduationYear,
-            companyName: userData.companyName,
-            jobTitle: userData.jobTitle,
-            industry: userData.industry,
-            createdAt: userData.createdAt,
-            updatedAt: userData.updatedAt,
+            graduationYear: userData.graduationYear || undefined,
+            companyName: userData.companyName || undefined,
+            jobTitle: userData.jobTitle || undefined,
+            industry: userData.industry || undefined,
+            createdAt: userData.createdAt || undefined,
+            updatedAt: userData.updatedAt || undefined,
           };
           
           setUser(fullUser);
@@ -70,7 +70,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
-  const login = async (email: string, password: string): Promise<void> => {
+  const login = async (_email: string, _password: string): Promise<void> => {
     // This function is called after successful Amplify signIn
     // to refresh the user state
     await checkAuthState();
