@@ -30,7 +30,7 @@ const SignInPage: React.FC = () => {
         password: password,
       };
       
-      const { isSignedIn, nextStep } = await signIn(signInInput);
+      const { isSignedIn } = await signIn(signInInput);
       
       if (isSignedIn) {
         // Let the AuthContext handle the user state update
