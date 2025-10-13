@@ -205,7 +205,6 @@ const CreateAccountPage: React.FC = () => {
             email: formData.email,
             given_name: formData.firstName,
             family_name: formData.lastName,
-            phone_number: formData.phoneNumber,
           },
         },
       };
