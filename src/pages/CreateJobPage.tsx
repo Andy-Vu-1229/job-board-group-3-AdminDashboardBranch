@@ -32,6 +32,19 @@ interface FormErrors {
   contactValue?: string;
 }
 
+const mapJobType = (type: string): 'INTERNSHIP' | 'FULL_TIME' | 'CONTRACT' => {
+  switch (type) {
+    case 'internship':
+      return 'INTERNSHIP';
+    case 'full-time':
+      return 'FULL_TIME';
+    case 'contract':
+      return 'CONTRACT';
+    default:
+      return 'INTERNSHIP';
+  }
+};
+
 const CreateJobPage: React.FC = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -187,7 +200,7 @@ const CreateJobPage: React.FC = () => {
         title: formData.title,
         company: formData.company,
         industry: formData.industry,
-        jobType: formData.type.toUpperCase() as 'INTERNSHIP' | 'FULL_TIME' | 'CONTRACT',
+        jobType: mapJobType(formData.type),
         description: `${formData.description}\n\nKey Responsibilities:\n${formData.responsibilities}`,
         skills: skillsArray,
         deadline: new Date(formData.deadline).toISOString(),
