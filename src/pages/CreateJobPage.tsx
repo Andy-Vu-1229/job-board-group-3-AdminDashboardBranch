@@ -344,9 +344,34 @@ const CreateJobPage: React.FC = () => {
                   value={formData.requiredSkills}
                   onChange={(e) => handleInputChange('requiredSkills', e.target.value)}
                   className={errors.requiredSkills ? 'error' : ''}
-                  placeholder="List the required skills, qualifications, and experience needed for this role..."
+                  placeholder="JavaScript, React, Node.js, Problem Solving, Communication"
                   rows={3}
                 />
+                <small className="field-hint">
+                  💡 Separate each skill with a comma or put each skill on a new line. These will appear as individual skill tags on the job card.
+                </small>
+                {formData.requiredSkills && (
+                  <div className="skills-preview">
+                    <small className="preview-label">Preview:</small>
+                    <div className="skills-preview-tags">
+                      {formData.requiredSkills
+                        .split(/[,\n]/)
+                        .map(skill => skill.trim())
+                        .filter(skill => skill.length > 0)
+                        .slice(0, 6)
+                        .map((skill, index) => (
+                          <span key={index} className="skill-preview-tag">
+                            {skill}
+                          </span>
+                        ))}
+                      {formData.requiredSkills.split(/[,\n]/).filter(s => s.trim().length > 0).length > 6 && (
+                        <span className="skill-preview-tag more">
+                          +{formData.requiredSkills.split(/[,\n]/).filter(s => s.trim().length > 0).length - 6} more
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                )}
                 {errors.requiredSkills && <span className="error-text">{errors.requiredSkills}</span>}
               </div>
             </div>

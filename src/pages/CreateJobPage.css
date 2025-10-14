@@ -254,4 +254,49 @@
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
+}/
+* Skills Preview Styles */
+.field-hint {
+  display: block;
+  color: #718096;
+  font-size: 0.875rem;
+  margin-top: 0.5rem;
+  line-height: 1.4;
+}
+
+.skills-preview {
+  margin-top: 0.75rem;
+  padding: 0.75rem;
+  background-color: #f7fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+}
+
+.preview-label {
+  display: block;
+  color: #4a5568;
+  font-weight: 500;
+  font-size: 0.875rem;
+  margin-bottom: 0.5rem;
+}
+
+.skills-preview-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.skill-preview-tag {
+  display: inline-block;
+  background-color: #3182ce;
+  color: white;
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.skill-preview-tag.more {
+  background-color: #718096;
 }
