@@ -65,10 +65,12 @@ const Navigation: React.FC = () => {
                 {user?.firstName} {user?.lastName}
               </span>
               <span className="user-role">
-                {user?.role === 'student' ? 'Student' : user?.role}
+                {user?.role === 'STUDENT' ? 'Student' :
+                    user?.role === 'COMPANY_REP' ? 'Company Rep' :
+                      user?.role === 'ADMIN' ? 'Admin' : user?.role}
               </span>
             </div>
-            <button onClick={logout} className="logout-button">
+            <button onClick={() => logout()} className="logout-button">
               Sign Out
             </button>
           </div>

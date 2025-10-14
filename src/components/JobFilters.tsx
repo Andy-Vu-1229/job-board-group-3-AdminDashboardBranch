@@ -21,9 +21,9 @@ const JobFilters: React.FC<JobFiltersProps> = ({
 }) => {
   const jobTypes = [
     { value: 'all', label: 'All Types' },
-    { value: 'internship', label: 'Internship' },
-    { value: 'full-time', label: 'Full-time' },
-    { value: 'contract', label: 'Contract' }
+    { value: 'INTERNSHIP', label: 'Internship' },
+    { value: 'FULL_TIME', label: 'Full-time' },
+    { value: 'CONTRACT', label: 'Contract' }
   ];
 
   const industries = [

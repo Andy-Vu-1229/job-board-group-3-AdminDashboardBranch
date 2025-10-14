@@ -1,5 +1,8 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Navigation from '../components/Navigation';
+import { useAuth } from '../hooks/useAuth';
+import { GraphQLService } from '../services/graphqlService';
 import './CreateJobPage.css';
 
 interface FormData {
@@ -29,7 +32,22 @@ interface FormErrors {
   contactValue?: string;
 }
 
+const mapJobType = (type: string): 'INTERNSHIP' | 'FULL_TIME' | 'CONTRACT' => {
+  switch (type) {
+    case 'internship':
+      return 'INTERNSHIP';
+    case 'full-time':
+      return 'FULL_TIME';
+    case 'contract':
+      return 'CONTRACT';
+    default:
+      return 'INTERNSHIP';
+  }
+};
+
 const CreateJobPage: React.FC = () => {
+  const { user } = useAuth();
+  const navigate = useNavigate();
   const [formData, setFormData] = useState<FormData>({
     title: '',
     company: '',
@@ -70,8 +88,7 @@ const CreateJobPage: React.FC = () => {
   const contactMethods = [
     { value: '', label: 'Select Contact Method' },
     { value: 'email', label: 'Email' },
-    { value: 'careers_page', label: 'Company Careers Page' },
-    { value: 'phone', label: 'Phone' }
+    { value: 'careers_page', label: 'Company Careers Page' }
   ];
 
   const validateField = (name: string, value: string): string => {
@@ -101,12 +118,12 @@ const CreateJobPage: React.FC = () => {
       
       case 'responsibilities':
         if (!value.trim()) return 'Key responsibilities are required';
-        if (value.trim().length < 30) return 'Key responsibilities must be at least 30 characters';
+        if (value.trim().length < 10) return 'Key responsibilities must be at least 10 characters';
         return '';
       
       case 'requiredSkills':
         if (!value.trim()) return 'Required skills are required';
-        if (value.trim().length < 10) return 'Required skills must be at least 10 characters';
+        if (value.trim().length < 5) return 'Required skills must be at least 5 characters';
         return '';
       
       case 'deadline': {
@@ -130,9 +147,6 @@ const CreateJobPage: React.FC = () => {
         } else if (formData.contactMethod === 'careers_page') {
           const urlRegex = /^https?:\/\/.+\..+/;
           if (!urlRegex.test(value)) return 'Please enter a valid URL (starting with http:// or https://)';
-        } else if (formData.contactMethod === 'phone') {
-          const phoneRegex = /^[\d\s\-()\\+]{10,}$/;
-          if (!phoneRegex.test(value)) return 'Please enter a valid phone number';
         }
         return '';
       }
@@ -170,34 +184,44 @@ const CreateJobPage: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!isFormValid) return;
+    if (!isFormValid || !user) return;
     
     setIsSubmitting(true);
     
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // Parse skills from textarea (split by commas or newlines)
+      const skillsArray = formData.requiredSkills
+        .split(/[,\n]/)
+        .map(skill => skill.trim())
+        .filter(skill => skill.length > 0);
+
+      // Create job posting
+      const jobData = {
+        title: formData.title,
+        company: formData.company,
+        industry: formData.industry,
+        jobType: mapJobType(formData.type),
+        description: `${formData.description}\n\nKey Responsibilities:\n${formData.responsibilities}`,
+        skills: skillsArray,
+        deadline: new Date(formData.deadline).toISOString(),
+        contactMethod: {
+          type: formData.contactMethod.toUpperCase() as 'EMAIL' | 'CAREERS_PAGE',
+          value: formData.contactValue
+        },
+        postedBy: user.email,
+        status: 'APPROVED' as const // Auto-approve for now
+      };
+
+      await GraphQLService.createJob(jobData);
       
       // Show success message
-      alert('Job posting created successfully!');
+      alert('Job posting created successfully and is now live!');
       
-      // Reset form
-      setFormData({
-        title: '',
-        company: '',
-        industry: '',
-        type: '',
-        description: '',
-        responsibilities: '',
-        requiredSkills: '',
-        deadline: '',
-        contactMethod: '',
-        contactValue: '',
-        contactInstructions: ''
-      });
-      setErrors({});
+      // Navigate back to dashboard
+      navigate('/dashboard');
       
     } catch (error) {
+      console.error('Error creating job posting:', error);
       alert('Error creating job posting. Please try again.');
     } finally {
       setIsSubmitting(false);
@@ -320,9 +344,34 @@ const CreateJobPage: React.FC = () => {
                   value={formData.requiredSkills}
                   onChange={(e) => handleInputChange('requiredSkills', e.target.value)}
                   className={errors.requiredSkills ? 'error' : ''}
-                  placeholder="List the required skills, qualifications, and experience needed for this role..."
+                  placeholder="JavaScript, React, Node.js, Problem Solving, Communication"
                   rows={3}
                 />
+                <small className="field-hint">
+                  💡 Separate each skill with a comma or put each skill on a new line. These will appear as individual skill tags on the job card.
+                </small>
+                {formData.requiredSkills && (
+                  <div className="skills-preview">
+                    <small className="preview-label">Preview:</small>
+                    <div className="skills-preview-tags">
+                      {formData.requiredSkills
+                        .split(/[,\n]/)
+                        .map(skill => skill.trim())
+                        .filter(skill => skill.length > 0)
+                        .slice(0, 6)
+                        .map((skill, index) => (
+                          <span key={index} className="skill-preview-tag">
+                            {skill}
+                          </span>
+                        ))}
+                      {formData.requiredSkills.split(/[,\n]/).filter(s => s.trim().length > 0).length > 6 && (
+                        <span className="skill-preview-tag more">
+                          +{formData.requiredSkills.split(/[,\n]/).filter(s => s.trim().length > 0).length - 6} more
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                )}
                 {errors.requiredSkills && <span className="error-text">{errors.requiredSkills}</span>}
               </div>
             </div>
@@ -364,8 +413,7 @@ const CreateJobPage: React.FC = () => {
                 <div className="form-group">
                   <label htmlFor="contactValue">
                     {formData.contactMethod === 'email' ? 'Email Address' :
-                     formData.contactMethod === 'careers_page' ? 'Careers Page URL' :
-                     formData.contactMethod === 'phone' ? 'Phone Number' : 'Contact Information'} *
+                     formData.contactMethod === 'careers_page' ? 'Careers Page URL' : 'Contact Information'} *
                   </label>
                   <input
                     type={formData.contactMethod === 'email' ? 'email' : 
@@ -376,8 +424,7 @@ const CreateJobPage: React.FC = () => {
                     className={errors.contactValue ? 'error' : ''}
                     placeholder={
                       formData.contactMethod === 'email' ? 'recruiter@company.com' :
-                      formData.contactMethod === 'careers_page' ? 'https://company.com/careers' :
-                      formData.contactMethod === 'phone' ? '(555) 123-4567' : 'Enter contact information'
+                      formData.contactMethod === 'careers_page' ? 'https://company.com/careers' : 'Enter contact information'
                     }
                   />
                   {errors.contactValue && <span className="error-text">{errors.contactValue}</span>}

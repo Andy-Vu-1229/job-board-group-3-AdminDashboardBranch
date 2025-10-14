@@ -8,7 +8,7 @@ const SignInPage: React.FC = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  
+
   const { login, isAuthenticated } = useAuth();
   const navigate = useNavigate();
 
@@ -26,8 +26,9 @@ const SignInPage: React.FC = () => {
     try {
       await login(email, password);
       navigate('/dashboard');
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred during sign in');
+    } catch (err: any) {
+      console.error('Sign in error:', err);
+      setError(err.message || 'Invalid email or password. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -41,7 +42,7 @@ const SignInPage: React.FC = () => {
           <p>University of Georgia Student Job Board</p>
           <p className="signin-subtitle">Sign in to access job opportunities</p>
         </div>
-        
+
         <form onSubmit={handleSubmit} className="signin-form">
           <div className="form-group">
             <label htmlFor="email">Email Address</label>
@@ -55,7 +56,7 @@ const SignInPage: React.FC = () => {
               className={error ? 'error' : ''}
             />
           </div>
-          
+
           <div className="form-group">
             <label htmlFor="password">Password</label>
             <input
@@ -68,27 +69,21 @@ const SignInPage: React.FC = () => {
               className={error ? 'error' : ''}
             />
           </div>
-          
+
           {error && (
             <div id="error-message" className="error-message" role="alert">
               {error}
             </div>
           )}
-          
-          <button 
-            type="submit" 
+
+          <button
+            type="submit"
             className="signin-button"
             disabled={isLoading}
           >
             {isLoading ? 'Signing In...' : 'Sign In'}
           </button>
         </form>
-        
-        <div className="demo-credentials">
-          <p><strong>Demo Credentials:</strong></p>
-          <p>Email: student@university.edu</p>
-          <p>Password: password123</p>
-        </div>
 
         <div className="create-account-link">
           <p>Don't have an account? <a href="/create-account">Create one here</a></p>
