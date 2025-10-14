@@ -42,7 +42,7 @@ const schema = a.schema({
       skills: a.string().array().required(),
       deadline: a.datetime().required(),
       contactMethod: a.ref("ContactMethod").required(),
-      postedBy: a.id().required(),
+      postedBy: a.email().required(),
       status: a.enum(["DRAFT", "PENDING", "APPROVED", "ARCHIVED"]),
       viewCount: a.integer().default(0),
       applicationCount: a.integer().default(0),
@@ -79,9 +79,12 @@ import type { Schema } from "../amplify/data/resource";
 
 const client = generateClient<Schema>();
 
-// Create a user profile (after Cognito authentication)
+// Create a user profile
 await client.models.User.create({
-  cognitoId: "cognito-user-sub-id",
+  email: "student@university.edu",
+  password: "password123",
+  firstName: "John",
+  lastName: "Doe",
   role: "STUDENT",
   phoneNumber: "555-0123",
   graduationYear: 2025
@@ -100,7 +103,7 @@ await client.models.JobPosting.create({
     type: "EMAIL",
     value: "hr@techcorp.com"
   },
-  postedBy: "cognito-user-sub-id"
+  postedBy: "admin@university.edu"
 });
 
 // List approved job postings
@@ -110,6 +113,6 @@ const { data: jobPostings } = await client.models.JobPosting.list({
 
 // Get user's job postings
 const { data: userJobs } = await client.models.JobPosting.list({
-  filter: { postedBy: { eq: "cognito-user-sub-id" } }
+  filter: { postedBy: { eq: "admin@university.edu" } }
 });
 */
