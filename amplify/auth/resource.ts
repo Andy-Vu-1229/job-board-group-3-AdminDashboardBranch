@@ -22,4 +22,8 @@ export const auth = defineAuth({
       mutable: true,
     },
   },
+  verification: {
+    email: false,
+    phone: false,
+  },
 });
