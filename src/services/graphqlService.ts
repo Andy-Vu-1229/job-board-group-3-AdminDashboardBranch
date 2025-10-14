@@ -28,15 +28,17 @@ function convertGraphQLJobToJobPosting(job: any): JobPosting {
 // Helper function to safely convert GraphQL user to our User type
 function convertGraphQLUserToUser(user: any): User {
     return {
-        cognitoId: user.cognitoId,
+        email: user.email,
+        firstName: user.firstName || '',
+        lastName: user.lastName || '',
         role: (user.role as 'STUDENT' | 'COMPANY_REP' | 'ADMIN') || 'STUDENT',
-        phoneNumber: user.phoneNumber || '',
+        phoneNumber: user.phoneNumber || undefined,
         graduationYear: user.graduationYear || undefined,
         companyName: user.companyName || undefined,
         jobTitle: user.jobTitle || undefined,
         industry: user.industry || undefined,
-        createdAt: user.createdAt || '',
-        updatedAt: user.updatedAt || '',
+        createdAt: user.createdAt || undefined,
+        updatedAt: user.updatedAt || undefined,
     };
 }
 
@@ -155,9 +157,9 @@ export class GraphQLService {
     }
 
     // User Operations
-    static async getUserProfile(cognitoId: string): Promise<User | null> {
+    static async getUserProfile(email: string): Promise<User | null> {
         try {
-            const { data: user, errors } = await client.models.User.get({ cognitoId });
+            const { data: user, errors } = await client.models.User.get({ email });
 
             if (errors) {
                 console.error("GraphQL errors:", errors);
@@ -176,7 +178,10 @@ export class GraphQLService {
     static async createUserProfile(userData: User): Promise<User> {
         try {
             const { data: user, errors } = await client.models.User.create({
-                cognitoId: userData.cognitoId,
+                email: userData.email,
+                password: userData.password || '',
+                firstName: userData.firstName,
+                lastName: userData.lastName,
                 role: userData.role,
                 phoneNumber: userData.phoneNumber,
                 graduationYear: userData.graduationYear,
@@ -197,10 +202,10 @@ export class GraphQLService {
         }
     }
 
-    static async updateUserProfile(cognitoId: string, updates: Partial<User>): Promise<User> {
+    static async updateUserProfile(email: string, updates: Partial<User>): Promise<User> {
         try {
             const { data: user, errors } = await client.models.User.update({
-                cognitoId,
+                email,
                 ...updates,
             });
 
@@ -216,10 +221,10 @@ export class GraphQLService {
         }
     }
 
-    static async getUserJobs(cognitoId: string): Promise<JobPosting[]> {
+    static async getUserJobs(userEmail: string): Promise<JobPosting[]> {
         try {
             const { data: jobs, errors } = await client.models.JobPosting.list({
-                filter: { postedBy: { eq: cognitoId } }
+                filter: { postedBy: { eq: userEmail } }
             });
 
             if (errors) {
@@ -231,6 +236,50 @@ export class GraphQLService {
         } catch (error) {
             console.error("Error fetching user jobs:", error);
             throw error;
+        }
+    }
+
+    // Authentication Operations
+    static async authenticateUser(email: string, password: string): Promise<User | null> {
+        try {
+            const { data: users, errors } = await client.models.User.list({
+                filter: {
+                    email: { eq: email },
+                    password: { eq: password }
+                }
+            });
+
+            if (errors) {
+                console.error("GraphQL errors:", errors);
+                throw new Error("Failed to authenticate user");
+            }
+
+            if (users && users.length > 0) {
+                return convertGraphQLUserToUser(users[0]);
+            }
+
+            return null;
+        } catch (error) {
+            console.error("Error authenticating user:", error);
+            throw error;
+        }
+    }
+
+    static async checkEmailExists(email: string): Promise<boolean> {
+        try {
+            const { data: users, errors } = await client.models.User.list({
+                filter: { email: { eq: email } }
+            });
+
+            if (errors) {
+                console.error("GraphQL errors:", errors);
+                return false;
+            }
+
+            return users && users.length > 0;
+        } catch (error) {
+            console.error("Error checking email:", error);
+            return false;
         }
     }
 

@@ -8,7 +8,10 @@ const schema = a.schema({
 
   User: a
     .model({
-      cognitoId: a.id().required(),
+      email: a.email().required(),
+      password: a.string().required(),
+      firstName: a.string().required(),
+      lastName: a.string().required(),
       role: a.enum(["STUDENT", "COMPANY_REP", "ADMIN"]),
       phoneNumber: a.string(),
       // Student fields
@@ -21,13 +24,12 @@ const schema = a.schema({
       createdAt: a.datetime(),
       updatedAt: a.datetime(),
     })
-    .identifier(["cognitoId"])
+    .identifier(["email"])
     .secondaryIndexes((index: any) => [
       index("role").name("byRole"),
     ])
     .authorization((allow: any) => [
-      allow.authenticated(),
-      allow.owner().to(["read", "update"]),
+      allow.publicApiKey(),
     ]),
 
   JobPosting: a
@@ -53,8 +55,7 @@ const schema = a.schema({
       index("industry").name("byIndustry"),
     ])
     .authorization((allow: any) => [
-      allow.authenticated().to(["read"]),
-      allow.owner().to(["create", "read", "update", "delete"]),
+      allow.publicApiKey(),
     ]),
 });
 
@@ -63,7 +64,10 @@ export type Schema = ClientSchema<typeof schema>;
 export const data = defineData({
   schema,
   authorizationModes: {
-    defaultAuthorizationMode: "userPool",
+    defaultAuthorizationMode: "apiKey",
+    apiKeyAuthorizationMode: {
+      expiresInDays: 365,
+    },
   },
 });
 

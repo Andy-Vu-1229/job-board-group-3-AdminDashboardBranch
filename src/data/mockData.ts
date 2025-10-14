@@ -3,22 +3,22 @@ import { JobPosting, User } from '../types';
 
 export const mockUsers: User[] = [
   {
-    cognitoId: '1',
-    role: 'STUDENT',
-    phoneNumber: '555-0123',
+    email: 'student@university.edu',
+    password: 'password',
     firstName: 'John',
     lastName: 'Doe',
-    email: 'student@university.edu',
+    role: 'STUDENT',
+    phoneNumber: '555-0123',
     graduationYear: 2025,
     createdAt: '2024-01-15T10:00:00Z',
   },
   {
-    cognitoId: '2',
-    role: 'ADMIN',
-    phoneNumber: '555-0456',
+    email: 'admin@university.edu',
+    password: 'password',
     firstName: 'Dr. Jane',
     lastName: 'Smith',
-    email: 'admin@university.edu',
+    role: 'ADMIN',
+    phoneNumber: '555-0456',
     createdAt: '2024-01-10T09:00:00Z',
   }
 ];

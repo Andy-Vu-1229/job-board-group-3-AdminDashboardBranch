@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { signIn, confirmSignUp, SignInInput } from 'aws-amplify/auth';
 import { useAuth } from '../hooks/useAuth';
 import './SignInPage.css';
 
@@ -9,8 +8,6 @@ const SignInPage: React.FC = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [showVerification, setShowVerification] = useState(false);
-  const [verificationCode, setVerificationCode] = useState('');
 
   const { login, isAuthenticated } = useAuth();
   const navigate = useNavigate();
@@ -27,79 +24,11 @@ const SignInPage: React.FC = () => {
     setIsLoading(true);
 
     try {
-      const signInInput: SignInInput = {
-        username: email,
-        password: password,
-      };
-
-      const { isSignedIn, nextStep } = await signIn(signInInput);
-
-      if (isSignedIn) {
-        // Let the AuthContext handle the user state update
-        await login(email, password);
-        navigate('/dashboard');
-      } else if (nextStep.signInStep === 'CONFIRM_SIGN_UP') {
-        setShowVerification(true);
-        setError('Please enter the verification code sent to your email.');
-      } else if (nextStep.signInStep === 'RESET_PASSWORD') {
-        setError('Password reset required. Please check your email for reset instructions.');
-      } else {
-        console.log('Sign in next step:', nextStep);
-        setError('Sign in incomplete. Please try again or contact support.');
-      }
+      await login(email, password);
+      navigate('/dashboard');
     } catch (err: any) {
       console.error('Sign in error:', err);
-
-      // Handle specific Amplify Auth errors
-      if (err.name === 'NotAuthorizedException') {
-        setError('Invalid email or password. Please try again.');
-      } else if (err.name === 'UserNotFoundException') {
-        setError('No account found with this email address. Please check your email or create an account.');
-      } else if (err.name === 'TooManyRequestsException') {
-        setError('Too many failed attempts. Please wait a moment before trying again.');
-      } else if (err.name === 'LimitExceededException') {
-        setError('Account temporarily locked due to too many failed attempts. Please try again later.');
-      } else {
-        setError(err.message || 'An error occurred during sign in. Please try again.');
-      }
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleVerification = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
-    setIsLoading(true);
-
-    try {
-      await confirmSignUp({
-        username: email,
-        confirmationCode: verificationCode,
-      });
-
-      // Now try to sign in again
-      const signInInput: SignInInput = {
-        username: email,
-        password: password,
-      };
-
-      const { isSignedIn } = await signIn(signInInput);
-
-      if (isSignedIn) {
-        await login(email, password);
-        navigate('/dashboard');
-      }
-    } catch (err: any) {
-      console.error('Verification error:', err);
-
-      if (err.name === 'CodeMismatchException') {
-        setError('Invalid verification code. Please try again.');
-      } else if (err.name === 'ExpiredCodeException') {
-        setError('Verification code has expired. Please request a new one.');
-      } else {
-        setError(err.message || 'Verification failed. Please try again.');
-      }
+      setError(err.message || 'Invalid email or password. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -155,37 +84,6 @@ const SignInPage: React.FC = () => {
             {isLoading ? 'Signing In...' : 'Sign In'}
           </button>
         </form>
-
-        {/* Email Verification Form */}
-        {showVerification && (
-          <div className="verification-section">
-            <h3>Email Verification Required</h3>
-            <p>Please enter the verification code sent to {email}</p>
-
-            <form onSubmit={handleVerification} className="verification-form">
-              <div className="form-group">
-                <label htmlFor="verificationCode">Verification Code</label>
-                <input
-                  type="text"
-                  id="verificationCode"
-                  value={verificationCode}
-                  onChange={(e) => setVerificationCode(e.target.value)}
-                  placeholder="Enter 6-digit code"
-                  maxLength={6}
-                  required
-                />
-              </div>
-
-              <button
-                type="submit"
-                className="signin-button"
-                disabled={isLoading || verificationCode.length !== 6}
-              >
-                {isLoading ? 'Verifying...' : 'Verify & Sign In'}
-              </button>
-            </form>
-          </div>
-        )}
 
         <div className="create-account-link">
           <p>Don't have an account? <a href="/create-account">Create one here</a></p>

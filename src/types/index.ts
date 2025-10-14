@@ -1,13 +1,12 @@
 // Core type definitions for the Student Job Board application
 
 export interface User {
-  cognitoId: string;
+  email: string;
+  password?: string; // Optional for security (don't expose in UI)
+  firstName: string;
+  lastName: string;
   role: 'STUDENT' | 'COMPANY_REP' | 'ADMIN';
   phoneNumber?: string;
-  // Cognito fields (will be fetched separately)
-  firstName?: string;
-  lastName?: string;
-  email?: string;
   // Student fields
   graduationYear?: number;
   // Company rep fields

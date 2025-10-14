@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { signUp, SignUpInput } from 'aws-amplify/auth';
 import { generateClient } from 'aws-amplify/data';
 import type { Schema } from '../../amplify/data/resource';
 import './CreateAccountPage.css';
@@ -195,36 +194,20 @@ const CreateAccountPage: React.FC = () => {
     setErrors(prev => ({ ...prev, general: '' }));
 
     try {
-      const signUpInput: SignUpInput = {
-        username: formData.email,
-        password: formData.password,
-        options: {
-          userAttributes: {
-            email: formData.email,
-            given_name: formData.firstName,
-            family_name: formData.lastName,
-          },
-        },
-      };
+      // Check if user already exists
+      const { data: existingUsers } = await client.models.User.list({
+        filter: { email: { eq: formData.email } }
+      });
 
-      const { isSignUpComplete, userId, nextStep } = await signUp(signUpInput);
-
-      if (isSignUpComplete) {
-        // Create user record in DynamoDB
-        await createUserRecord(userId!);
-        alert('Account created successfully! You can now sign in.');
-        navigate('/signin');
-      } else if (nextStep.signUpStep === 'CONFIRM_SIGN_UP') {
-        // User needs to confirm email, but we'll create the DynamoDB record anyway
-        await createUserRecord(userId!);
-        alert('Account created! Please check your email for verification, then you can sign in.');
-        navigate('/signin');
-      } else {
-        // Handle other cases
-        await createUserRecord(userId!);
-        alert('Account created! You can now sign in.');
-        navigate('/signin');
+      if (existingUsers && existingUsers.length > 0) {
+        setErrors(prev => ({ ...prev, general: 'An account with this email already exists.' }));
+        return;
       }
+
+      // Create user record directly in DynamoDB
+      await createUserRecord();
+      alert('Account created successfully! You can now sign in.');
+      navigate('/signin');
     } catch (error: any) {
       console.error('Sign up error:', error);
       
@@ -242,10 +225,13 @@ const CreateAccountPage: React.FC = () => {
     }
   };
 
-  const createUserRecord = async (cognitoId: string) => {
+  const createUserRecord = async () => {
     try {
       const userData: any = {
-        cognitoId,
+        email: formData.email,
+        password: formData.password, // Plain text password
+        firstName: formData.firstName,
+        lastName: formData.lastName,
         role: formData.role as 'STUDENT' | 'COMPANY_REP' | 'ADMIN',
       };
 

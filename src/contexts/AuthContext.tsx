@@ -1,5 +1,4 @@
 import React, { createContext, useState, useEffect, ReactNode } from 'react';
-import { getCurrentUser, signOut, fetchUserAttributes } from 'aws-amplify/auth';
 import { generateClient } from 'aws-amplify/data';
 import type { Schema } from '../../amplify/data/resource';
 import { User, AuthContextType } from '../types';
@@ -23,55 +22,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const checkAuthState = async () => {
     setLoading(true);
     try {
-      // Check if user is authenticated with Cognito
-      const cognitoUser = await getCurrentUser();
-      
-      if (cognitoUser) {
-        // Fetch user attributes from Cognito
-        const userAttributes = await fetchUserAttributes();
-        
-        // Fetch extended user data from DynamoDB
-        try {
-          const { data: userData } = await client.models.User.get({
-            cognitoId: cognitoUser.userId
-          });
-
-          if (userData) {
-            // Combine Cognito and DynamoDB data
-            const fullUser: User = {
-              cognitoId: userData.cognitoId,
-              role: userData.role!,
-              phoneNumber: userData.phoneNumber || undefined,
-              firstName: userAttributes.given_name,
-              lastName: userAttributes.family_name,
-              email: userAttributes.email,
-              graduationYear: userData.graduationYear || undefined,
-              companyName: userData.companyName || undefined,
-              jobTitle: userData.jobTitle || undefined,
-              industry: userData.industry || undefined,
-              createdAt: userData.createdAt || undefined,
-              updatedAt: userData.updatedAt || undefined,
-            };
-            
-            setUser(fullUser);
-          } else {
-            // User exists in Cognito but not in DynamoDB - sign them out
-            console.warn('User exists in Cognito but not in DynamoDB');
-            await signOut();
-            setUser(null);
-          }
-        } catch (dbError) {
-          console.error('Error fetching user data from DynamoDB:', dbError);
-          // For now, create a basic user object with just Cognito data
-          const basicUser: User = {
-            cognitoId: cognitoUser.userId,
-            role: 'STUDENT', // Default role
-            firstName: userAttributes.given_name,
-            lastName: userAttributes.family_name,
-            email: userAttributes.email,
-          };
-          setUser(basicUser);
-        }
+      // Check if user is stored in localStorage
+      const savedUser = localStorage.getItem('currentUser');
+      if (savedUser) {
+        const userData = JSON.parse(savedUser);
+        setUser(userData);
       } else {
         setUser(null);
       }
@@ -83,22 +38,49 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
-  const login = async (_email: string, _password: string): Promise<void> => {
-    // This function is called after successful Amplify signIn
-    // to refresh the user state
-    await checkAuthState();
-  };
-
-  const logout = async (): Promise<void> => {
+  const login = async (email: string, password: string): Promise<void> => {
     setLoading(true);
     try {
-      await signOut();
-      setUser(null);
+      // Query DynamoDB for user with matching email and password
+      const { data: users } = await client.models.User.list({
+        filter: {
+          email: { eq: email },
+          password: { eq: password }
+        }
+      });
+
+      if (users && users.length > 0) {
+        const userData = users[0];
+        const user: User = {
+          email: userData.email,
+          firstName: userData.firstName,
+          lastName: userData.lastName,
+          role: userData.role!,
+          phoneNumber: userData.phoneNumber || undefined,
+          graduationYear: userData.graduationYear || undefined,
+          companyName: userData.companyName || undefined,
+          jobTitle: userData.jobTitle || undefined,
+          industry: userData.industry || undefined,
+          createdAt: userData.createdAt || undefined,
+          updatedAt: userData.updatedAt || undefined,
+        };
+        
+        setUser(user);
+        localStorage.setItem('currentUser', JSON.stringify(user));
+      } else {
+        throw new Error('Invalid email or password');
+      }
     } catch (error) {
-      console.error('Error signing out:', error);
+      console.error('Login error:', error);
+      throw error;
     } finally {
       setLoading(false);
     }
+  };
+
+  const logout = async (): Promise<void> => {
+    setUser(null);
+    localStorage.removeItem('currentUser');
   };
 
   const value: AuthContextType = {
