@@ -21,6 +21,7 @@ const StudentDashboard: React.FC = () => {
       setLoading(true);
       try {
         const jobPostings = await GraphQLService.getApprovedJobs();
+        console.log('Loaded jobs:', jobPostings); // Debug logging
         setJobs(jobPostings);
         setFilteredJobs(jobPostings);
       } catch (error) {
@@ -77,7 +78,7 @@ const StudentDashboard: React.FC = () => {
     try {
       // Increment view count when user shows interest
       await GraphQLService.incrementJobViewCount(jobId);
-      
+
       // Find the job to get contact method
       const job = filteredJobs.find(j => j.id === jobId);
       if (job) {

@@ -1,5 +1,8 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Navigation from '../components/Navigation';
+import { useAuth } from '../hooks/useAuth';
+import { GraphQLService } from '../services/graphqlService';
 import './CreateJobPage.css';
 
 interface FormData {
@@ -30,6 +33,8 @@ interface FormErrors {
 }
 
 const CreateJobPage: React.FC = () => {
+  const { user } = useAuth();
+  const navigate = useNavigate();
   const [formData, setFormData] = useState<FormData>({
     title: '',
     company: '',
@@ -70,8 +75,7 @@ const CreateJobPage: React.FC = () => {
   const contactMethods = [
     { value: '', label: 'Select Contact Method' },
     { value: 'email', label: 'Email' },
-    { value: 'careers_page', label: 'Company Careers Page' },
-    { value: 'phone', label: 'Phone' }
+    { value: 'careers_page', label: 'Company Careers Page' }
   ];
 
   const validateField = (name: string, value: string): string => {
@@ -101,12 +105,12 @@ const CreateJobPage: React.FC = () => {
       
       case 'responsibilities':
         if (!value.trim()) return 'Key responsibilities are required';
-        if (value.trim().length < 30) return 'Key responsibilities must be at least 30 characters';
+        if (value.trim().length < 10) return 'Key responsibilities must be at least 10 characters';
         return '';
       
       case 'requiredSkills':
         if (!value.trim()) return 'Required skills are required';
-        if (value.trim().length < 10) return 'Required skills must be at least 10 characters';
+        if (value.trim().length < 5) return 'Required skills must be at least 5 characters';
         return '';
       
       case 'deadline': {
@@ -130,9 +134,6 @@ const CreateJobPage: React.FC = () => {
         } else if (formData.contactMethod === 'careers_page') {
           const urlRegex = /^https?:\/\/.+\..+/;
           if (!urlRegex.test(value)) return 'Please enter a valid URL (starting with http:// or https://)';
-        } else if (formData.contactMethod === 'phone') {
-          const phoneRegex = /^[\d\s\-()\\+]{10,}$/;
-          if (!phoneRegex.test(value)) return 'Please enter a valid phone number';
         }
         return '';
       }
@@ -170,34 +171,44 @@ const CreateJobPage: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!isFormValid) return;
+    if (!isFormValid || !user) return;
     
     setIsSubmitting(true);
     
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // Parse skills from textarea (split by commas or newlines)
+      const skillsArray = formData.requiredSkills
+        .split(/[,\n]/)
+        .map(skill => skill.trim())
+        .filter(skill => skill.length > 0);
+
+      // Create job posting
+      const jobData = {
+        title: formData.title,
+        company: formData.company,
+        industry: formData.industry,
+        jobType: formData.type.toUpperCase() as 'INTERNSHIP' | 'FULL_TIME' | 'CONTRACT',
+        description: `${formData.description}\n\nKey Responsibilities:\n${formData.responsibilities}`,
+        skills: skillsArray,
+        deadline: new Date(formData.deadline).toISOString(),
+        contactMethod: {
+          type: formData.contactMethod.toUpperCase() as 'EMAIL' | 'CAREERS_PAGE',
+          value: formData.contactValue
+        },
+        postedBy: user.email,
+        status: 'APPROVED' as const // Auto-approve for now
+      };
+
+      await GraphQLService.createJob(jobData);
       
       // Show success message
-      alert('Job posting created successfully!');
+      alert('Job posting created successfully and is now live!');
       
-      // Reset form
-      setFormData({
-        title: '',
-        company: '',
-        industry: '',
-        type: '',
-        description: '',
-        responsibilities: '',
-        requiredSkills: '',
-        deadline: '',
-        contactMethod: '',
-        contactValue: '',
-        contactInstructions: ''
-      });
-      setErrors({});
+      // Navigate back to dashboard
+      navigate('/dashboard');
       
     } catch (error) {
+      console.error('Error creating job posting:', error);
       alert('Error creating job posting. Please try again.');
     } finally {
       setIsSubmitting(false);
@@ -364,8 +375,7 @@ const CreateJobPage: React.FC = () => {
                 <div className="form-group">
                   <label htmlFor="contactValue">
                     {formData.contactMethod === 'email' ? 'Email Address' :
-                     formData.contactMethod === 'careers_page' ? 'Careers Page URL' :
-                     formData.contactMethod === 'phone' ? 'Phone Number' : 'Contact Information'} *
+                     formData.contactMethod === 'careers_page' ? 'Careers Page URL' : 'Contact Information'} *
                   </label>
                   <input
                     type={formData.contactMethod === 'email' ? 'email' : 
@@ -376,8 +386,7 @@ const CreateJobPage: React.FC = () => {
                     className={errors.contactValue ? 'error' : ''}
                     placeholder={
                       formData.contactMethod === 'email' ? 'recruiter@company.com' :
-                      formData.contactMethod === 'careers_page' ? 'https://company.com/careers' :
-                      formData.contactMethod === 'phone' ? '(555) 123-4567' : 'Enter contact information'
+                      formData.contactMethod === 'careers_page' ? 'https://company.com/careers' : 'Enter contact information'
                     }
                   />
                   {errors.contactValue && <span className="error-text">{errors.contactValue}</span>}
