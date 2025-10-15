@@ -2,16 +2,13 @@
 
 A comprehensive web application designed for MIS (Management Information Systems) students at the University of Georgia to discover and apply for job opportunities. The platform connects students with internships, full-time positions, and contract work posted by administrators and company representatives.
 
-## 🎯 Project Overview
+## Project Overview
 
 ### Key Features
 
-- **🔐 Simple Authentication**: Email/password authentication with role-based access (Student, Company Rep, Admin)
-- **💼 Job Management**: Create, view, and manage job postings with detailed information
-- **🎯 Role-Based Dashboards**: Customized experiences for different user types
-- **🔍 Advanced Filtering**: Search jobs by type, industry, skills, and keywords
-- **📱 Responsive Design**: Mobile-first design that works on all devices
-- **⚡ Real-time Updates**: Live job posting updates and application tracking
+- **Simple Authentication**: Email/password authentication with role-based access (Student, Company Rep, Admin)
+- **Job Management**: Create, view, and manage job postings with detailed information
+- **Role-Based Dashboards**: Customized experiences for different user types
 
 ### User Roles
 
@@ -50,67 +47,23 @@ A comprehensive web application designed for MIS (Management Information Systems
    - Open your browser to `http://localhost:5173`
    - Create an account or use test credentials
 
-### Test Accounts
 
-For development and testing, you can create accounts with these roles:
-- **Student**: Select "MIS Student" during registration
-- **Company Rep**: Select "Company Representative" during registration  
-- **Admin**: Select "Admin" during registration
-
-## 🏗️ Architecture Overview
+## Architecture Overview
 
 ### Frontend (React + TypeScript + Vite)
 
-- **Framework**: React 18 with TypeScript for type safety
-- **Build Tool**: Vite for fast development and optimized builds
+- **Framework**: React 18 with TypeScript
 - **Routing**: React Router for client-side navigation
-- **Styling**: CSS modules with responsive design
+- **Styling**: CSS modules
 - **State Management**: React Context for authentication and global state
 
 ### Backend (AWS Amplify Gen 2)
 
 - **Database**: Amazon DynamoDB with GraphQL API
 - **API**: AWS AppSync for real-time GraphQL operations
-- **Authentication**: Simple email/password stored in DynamoDB (development-focused)
+- **Authentication**: Email/password stored in DynamoDB
 - **Authorization**: API Key-based access for simplified development
 - **Hosting**: AWS Amplify Hosting for automatic deployments
-
-### Data Models
-
-#### User Model
-```typescript
-{
-  email: string (Primary Key)
-  password: string
-  firstName: string
-  lastName: string
-  role: 'STUDENT' | 'COMPANY_REP' | 'ADMIN'
-  phoneNumber?: string
-  graduationYear?: number (for students)
-  companyName?: string (for company reps)
-  jobTitle?: string (for company reps)
-  industry?: string (for company reps)
-}
-```
-
-#### Job Posting Model
-```typescript
-{
-  id: string (Auto-generated)
-  title: string
-  company: string
-  industry: string
-  jobType: 'INTERNSHIP' | 'FULL_TIME' | 'CONTRACT'
-  description: string
-  skills: string[]
-  deadline: datetime
-  contactMethod: { type: 'EMAIL' | 'CAREERS_PAGE', value: string }
-  postedBy: string (User email)
-  status: 'DRAFT' | 'PENDING' | 'APPROVED' | 'ARCHIVED'
-  viewCount: number
-  applicationCount: number
-}
-```
 
 ## 🔧 Backend Configuration
 
@@ -123,12 +76,6 @@ The project uses AWS Amplify Gen 2 for backend services:
 // amplify/backend.ts - Configures the backend stack
 ```
 
-### Database Schema
-
-- **Authorization Mode**: API Key (for development simplicity)
-- **Data Access**: Public API key access for all operations
-- **Relationships**: Jobs linked to users via email references
-
 ### GraphQL Operations
 
 The application uses a custom GraphQL service layer (`src/services/graphqlService.ts`) that provides:
@@ -137,7 +84,7 @@ The application uses a custom GraphQL service layer (`src/services/graphqlServic
 - Search and filtering capabilities
 - Real-time data synchronization
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 src/
@@ -163,7 +110,7 @@ amplify/
 └── backend.ts          # Amplify backend configuration
 ```
 
-## 🚀 Deployment
+## Deployment
 
 ### AWS Amplify Deployment
 
@@ -171,11 +118,7 @@ amplify/
    - Link your GitHub repository to AWS Amplify
    - Configure build settings (auto-detected for Vite)
 
-2. **Environment Variables**
-   - No additional environment variables required
-   - Amplify automatically generates `amplify_outputs.json`
-
-3. **Build Configuration**
+2. **Build Configuration**
    ```yaml
    version: 1
    frontend:
@@ -192,17 +135,7 @@ amplify/
          - '**/*'
    ```
 
-### Manual Deployment
-
-```bash
-# Build the application
-npm run build
-
-# Deploy to Amplify (requires Amplify CLI)
-npx ampx pipeline-deploy --branch main --app-id <your-app-id>
-```
-
-## 🛠️ Development Notes
+## Development Notes
 
 ### Authentication System
 
@@ -226,7 +159,7 @@ The application uses a simplified authentication system for development purposes
 - **Accessibility**: ARIA labels and keyboard navigation
 - **Professional Theme**: Clean, academic-focused design
 
-## 🤝 Contributing
+## Contributing
 
 1. Fork the repository
 2. Create a feature branch (`git checkout -b feature/amazing-feature`)
@@ -234,11 +167,11 @@ The application uses a simplified authentication system for development purposes
 4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
 
-## 📄 License
+## License
 
 This project is licensed under the MIT-0 License - see the [LICENSE](LICENSE) file for details.
 
-## 🆘 Support
+## Support
 
 For questions or support regarding this project:
 - Check the [AWS Amplify Documentation](https://docs.amplify.aws/)
